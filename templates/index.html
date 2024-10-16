@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Number Guessing Game</title>
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin-top: 50px;
+            border: 2px solid #007bff;
+            border-radius: 10px;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+        .funny-comment {
+            color: #28a745;
+        }
+        /* Animation styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+        }
+        .modal.show {
+            display: block; /* Show the modal */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Number Guessing Game 🎉</h1>
+
+        {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        {% if result %}
+        <div class="alert alert-success">{{ result }}</div>
+        {% endif %}
+
+        {% if feedback %}
+        <div class="alert alert-info">{{ feedback }}</div>
+        {% endif %}
+
+        {% if show_number %}
+        <div class="mt-3 alert alert-warning">
+            <strong>Target Number:</strong> {{ target_number }}
+        </div>
+        {% endif %}
+
+        <form method="POST">
+            <div class="form-group">
+                <label for="guess">Enter your guess (4-digit number):</label>
+                <input type="text" class="form-control" id="guess" name="guess" maxlength="4" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Guess</button>
+            <button type="submit" class="btn btn-secondary" name="show_number">Show Target Number</button>
+            <button type="submit" class="btn btn-danger" name="restart">Restart Game</button>
+        </form>
+
+        <h3 class="mt-4">Guess History:</h3>
+        {% if guess_history %}
+        <table class="table table-bordered">
+            <thead class="thead-light">
+                <tr>
+                    <th>Guess</th>
+                    <th>Matches</th>
+                    <th>Correct Position</th>
+                    <th>Score & Funny Comment</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for guess_entry in guess_history %}
+                <tr>
+                    <td>{{ guess_entry.guess }}</td>
+                    <td>{{ guess_entry.match_count }}</td>
+                    <td>{{ guess_entry.position_match_count }}</td>
+                    <td>
+                        {{ guess_entry.score }} - <span class="funny-comment">{{ guess_entry.comment }}</span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p>No guesses yet. Start guessing!</p>
+        {% endif %}
+
+        {% if guess_history and (guess_history|length >= max_guesses) %}
+        <form method="POST">
+            <button type="submit" class="btn btn-warning" name="show_number">Show Target Number After Failing!</button>
+        </form>
+        {% endif %}
+        
+        <div class="mt-4">
+            <h3>High Scores:</h3>
+            {% if high_scores %}
+            <table class="table table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Player Name</th>
+                        <th>Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for name, score in high_scores %}
+                    <tr>
+                        <td>{{ name }}</td>
+                        <td>{{ score }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p>No high scores yet. Be the first! 🌟</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Winning Modal -->
+    <div class="modal" id="winningModal">
+        <div class="modal-content">
+            <h2>Congratulations! 🎉 You guessed it right!</h2>
+            <form method="POST">
+                <label for="player_name">Enter your name:</label>
+                <input type="text" name="player_name" required>
+                <button type="submit" class="btn btn-success">Submit</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Show modal when the winning condition is met
+        {% if guess_history and guess_history[-1].position_match_count == 4 %}
+        document.getElementById("winningModal").classList.add("show");
+        {% endif %}
+        
+        // Close modal on outside click
+        window.onclick = function(event) {
+            var modal = document.getElementById("winningModal");
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>
