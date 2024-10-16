@@ -7,7 +7,6 @@ app = Flask(__name__)
 target_number = ""
 guess_history = []
 max_guesses = 10  # Set maximum number of guesses
-show_number = False
 high_scores = []  # Store high scores as a list of tuples (name, score)
 
 def generate_target_number():
@@ -23,18 +22,13 @@ def get_match_info(guess, target):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
-    global target_number, guess_history, show_number, high_scores
+    global target_number, guess_history, high_scores
 
     if request.method == "POST":
         if "restart" in request.form:
             # Restart the game
             target_number = generate_target_number()
             guess_history = []
-            show_number = False
-            return redirect(url_for("index"))
-
-        if "show_number" in request.form:
-            show_number = True
             return redirect(url_for("index"))
 
         guess = request.form.get("guess")
@@ -58,15 +52,23 @@ def index():
                     # Add new score to the high scores list
                     high_scores.append((player_name, score))
 
-                # Generate a new target number for the next game
-                target_number = generate_target_number()
+                # Display winning message
                 guess_history[-1]["comment"] = "Congratulations! 🎉 You guessed it right!"
 
                 return redirect(url_for("index"))
 
-    return render_template("index.html", target_number=target_number if show_number else None,
+    return render_template("index.html", target_number=None,
                            guess_history=guess_history, max_guesses=max_guesses,
                            high_scores=high_scores)
+
+@app.route("/show_target_number")
+def show_target_number():
+    global target_number
+    return render_template("show_target_number.html", target_number=target_number)
+
+@app.route("/rules")
+def rules():
+    return render_template("rules.html")
 
 if __name__ == "__main__":
     target_number = generate_target_number()
